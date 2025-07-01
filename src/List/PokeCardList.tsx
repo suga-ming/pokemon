@@ -1,36 +1,49 @@
 import styled from "@emotion/styled";
 import PokeCard from "./PokeCard";
-import { fetchPokemons, PokemonListResponseType } from "../Service/pokeService";
+import {
+  fetchPokemonsAPI,
+  PokemonListResponseType,
+} from "../Service/pokeService";
 import { useEffect, useState } from "react";
 import useInfiniteScroll from "react-infinite-scroll-hook";
+import { fetchPokemons } from "../Store/pokemonSlice";
+import { RootState, useAppDispatch } from "../Store";
+import { useSelector } from "react-redux";
 
 const PokeCardList = () => {
-  const [pokemons, setPokemons] = useState<PokemonListResponseType>({
-    count: 0,
-    next: "",
-    results: [],
-  });
+  const dispatch = useAppDispatch();
+  // const [pokemons, setPokemons] = useState<PokemonListResponseType>({
+  //   count: 0,
+  //   next: "",
+  //   results: [],
+  // });
+  const { pokemons } = useSelector((state: RootState) => state.pokemons);
 
   const [infiniteRef] = useInfiniteScroll({
     loading: false,
     hasNextPage: pokemons.next !== "",
     onLoadMore: async () => {
-      const morePokemons = await fetchPokemons(pokemons.next);
-      setPokemons({
-        ...morePokemons,
-        results: [...pokemons.results, ...morePokemons.results],
-      });
+      dispatch(fetchPokemons(pokemons.next));
+      // const morePokemons = await fetchPokemonsAPI(pokemons.next);
+      // setPokemons({
+      //   ...morePokemons,
+      //   results: [...pokemons.results, ...morePokemons.results],
+      // });
     },
     disabled: false,
     rootMargin: "0px 0px 400px 0px",
   });
 
   useEffect(() => {
-    (async () => {
-      const pokemons = await fetchPokemons();
-      setPokemons(pokemons);
-    })();
-  }, []);
+    // if (pokemons.results.length === 0) {
+    dispatch(fetchPokemons());
+    // }
+
+    // (async () => {
+    //   const pokemons = await fetchPokemonsAPI();
+    //   setPokemons(pokemons);
+    // })();
+  }, [dispatch]);
   return (
     <>
       <List>

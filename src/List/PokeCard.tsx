@@ -3,11 +3,12 @@ import PokeNameChip from "../Common/PokeNameChip";
 import PokeMarkChip from "../Common/PokeMarkChip";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { fetchPokeDetail, PokemonDetailType } from "../Service/pokeService";
+import { fetchPokeDetailAPI, PokemonDetailType } from "../Service/pokeService";
 import { PokeImageSkeleton } from "../Common/PokeImageSkeleton";
 import { useIntersectionObserver } from "react-intersection-observer-hook";
 import { useSelector } from "react-redux";
-import { RootState } from "../Store";
+import { RootState, useAppDispatch } from "../Store";
+import { fetchPokemonDetail } from "../Store/pokemonDetailSlice";
 
 interface PokeCardProps {
   name: string;
@@ -16,19 +17,24 @@ interface PokeCardProps {
 const PokeCard = (props: PokeCardProps) => {
   const navigate = useNavigate();
   const imageType = useSelector((state: RootState) => state.imageType.type);
-
-  const [pokemon, setPokemon] = useState<PokemonDetailType | null>(null);
+  const { pokemonDetails } = useSelector(
+    (state: RootState) => state.pokemonDetail
+  );
+  // const [pokemon, setPokemon] = useState<PokemonDetailType | null>(null);
+  const pokemon = pokemonDetails[props.name];
+  const dispatch = useAppDispatch();
   const [ref, { entry }] = useIntersectionObserver();
   const isVisible = entry && entry.isIntersecting;
 
   useEffect(() => {
     if (!isVisible) return;
+    dispatch(fetchPokemonDetail(props.name));
 
-    (async () => {
-      const detail = await fetchPokeDetail(props.name);
-      setPokemon(detail);
-    })();
-  }, [props.name, isVisible]);
+    // (async () => {
+    //   const detail = await fetchPokeDetail(props.name);
+    //   setPokemon(detail);
+    // })();
+  }, [dispatch, props.name, isVisible]);
 
   const handelerClick = () => {
     navigate(`/pokemon/${props.name}`);

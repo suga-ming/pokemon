@@ -1,24 +1,30 @@
 import styled from "@emotion/styled";
 import PokeMarkChip from "../Common/PokeMarkChip";
 import { useEffect, useState } from "react";
-import { fetchPokeDetail, PokemonDetailType } from "../Service/pokeService";
+import { fetchPokeDetailAPI, PokemonDetailType } from "../Service/pokeService";
 import { useParams } from "react-router-dom";
 import { PokeImageSkeleton } from "../Common/PokeImageSkeleton";
 import { useSelector } from "react-redux";
-import { RootState } from "../Store";
+import { RootState, useAppDispatch } from "../Store";
+import { fetchPokemonDetail } from "../Store/pokemonDetailSlice";
 
 const PokeDetail = () => {
-  const [pokemon, setPokemon] = useState<PokemonDetailType | null>(null);
-  const imageType = useSelector((state: RootState) => state.imageType.type);
+  // const [pokemon, setPokemon] = useState<PokemonDetailType | null>(null);
   const { name } = useParams();
+  const { pokemonDetails } = useSelector(
+    (state: RootState) => state.pokemonDetail
+  );
+  const pokemon = name ? pokemonDetails[name] : null;
+  const imageType = useSelector((state: RootState) => state.imageType.type);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     if (!name) return;
-
-    (async () => {
-      const detail = await fetchPokeDetail(name);
-      setPokemon(detail);
-    })();
+    dispatch(fetchPokemonDetail(name));
+    // (async () => {
+    //   const detail = await fetchPokeDetailAPI(name);
+    //   setPokemon(detail);
+    // })();
   }, [name]);
 
   if (!name || !pokemon) {
